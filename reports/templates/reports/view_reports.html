@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Submitted Reports</h1>
+    {% if reports %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Description</th>
+                    <th>Location</th>
+                    <th>Submitted By</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                    <tr>
+                        <td>{{ report.id }}</td>
+                        <td>{{ report.description }}</td>
+                        <td>{{ report.latitude }}, {{ report.longitude }}</td>
+                        <td>{{ report.user.username }}</td>
+                        <td>{{ report.created_at }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No reports available.</p>
+    {% endif %}
+{% endblock %}

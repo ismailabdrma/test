@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2>Report a Defect</h2>
+
+  <!-- Form for reporting a defect -->
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="form-group">
+      <label for="id_description">Description:</label>
+      <textarea id="id_description" name="description" class="form-control"></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="id_category">Category:</label>
+      <input type="text" id="id_category" name="category" class="form-control">
+    </div>
+    
+    <div class="form-group">
+      <label for="id_location">Location:</label>
+      <input type="text" id="id_location" name="location" class="form-control">
+    </div>
+    
+    <!-- Map Container -->
+    <div id="map" style="height: 400px; margin-bottom: 20px;"></div>
+    
+    <!-- Latitude and Longitude fields (hidden) -->
+    <input type="hidden" id="id_latitude" name="latitude">
+    <input type="hidden" id="id_longitude" name="longitude">
+    
+    <div class="form-group">
+      <label for="id_image">Image:</label>
+      <input type="file" id="id_image" name="image" class="form-control">
+    </div>
+    
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Submit Report</button>
+  </form>
+
+  <!-- JavaScript for the Map and Geolocation -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the map with a default view
+        var map = L.map('map').setView([0, 0], 2);
+
+        // Set the tile layer for the map (using OpenStreetMap tiles)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Marker variable to track user's selected location
+        var marker;
+
+        // Check if geolocation is available
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var userLatLng = [position.coords.latitude, position.coords.longitude];
+                
+                // Set map view to user's current location with a zoom level of 13
+                map.setView(userLatLng, 13);
+
+                // Add a draggable marker to the map at the user's location
+                marker = L.marker(userLatLng, { draggable: true }).addTo(map);
+
+                // Update the latitude and longitude input fields when the marker is dragged
+                marker.on('dragend', function(e) {
+                    var latlng = marker.getLatLng();
+                    document.getElementById('id_latitude').value = latlng.lat;
+                    document.getElementById('id_longitude').value = latlng.lng;
+                });
+
+                // Initialize the latitude and longitude input fields with user's current location
+                document.getElementById('id_latitude').value = userLatLng[0];
+                document.getElementById('id_longitude').value = userLatLng[1];
+            }, function(error) {
+                console.error("Geolocation error: " + error.message);
+                // Optionally set a default location if geolocation fails
+                var defaultLatLng = [33.5415, -7.6735]; // Example: Default to Casablanca
+                map.setView(defaultLatLng, 13);
+                marker = L.marker(defaultLatLng, { draggable: true }).addTo(map);
+
+                marker.on('dragend', function(e) {
+                    var latlng = marker.getLatLng();
+                    document.getElementById('id_latitude').value = latlng.lat;
+                    document.getElementById('id_longitude').value = latlng.lng;
+                });
+
+                document.getElementById('id_latitude').value = defaultLatLng[0];
+                document.getElementById('id_longitude').value = defaultLatLng[1];
+            }, {
+                enableHighAccuracy: true, // Request high accuracy
+                timeout: 5000, // Timeout after 5 seconds
+                maximumAge: 0 // No cache
+            });
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+            // Optionally set a default location if geolocation is not supported
+            var defaultLatLng = [33.5415, -7.6735]; // Example: Default to Casablanca
+            map.setView(defaultLatLng, 13);
+            marker = L.marker(defaultLatLng, { draggable: true }).addTo(map);
+
+            marker.on('dragend', function(e) {
+                var latlng = marker.getLatLng();
+                document.getElementById('id_latitude').value = latlng.lat;
+                document.getElementById('id_longitude').value = latlng.lng;
+            });
+
+            document.getElementById('id_latitude').value = defaultLatLng[0];
+            document.getElementById('id_longitude').value = defaultLatLng[1];
+        }
+    });
+  </script>
+
+{% endblock %}
